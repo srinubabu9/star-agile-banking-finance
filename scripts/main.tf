@@ -6,7 +6,7 @@ vpc_security_group_ids = ["sg-0c77b822c85ed438d"]
 
 connection {
 type = "ssh"
-user = "sri"
+user = "ubuntu"
 private_key = file("./sri.pem")
 host = self.public_ip
 }
