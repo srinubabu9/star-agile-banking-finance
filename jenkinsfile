@@ -1,0 +1,47 @@
+pipeline {
+    agent {label 'slave1' }
+    stages {
+        stage('SCM checkout') {
+            steps {
+                echo "cloning repo from git hub"
+                git 'https://github.com/srinubabu9/star-agile-banking-finance.git'
+            }
+        }
+        stage('maven build') {
+            steps{
+                sh 'mvn clean package'
+            }
+        }
+        stage('create docker image') {
+            steps {
+                echo 'building docker image '
+                sh 'docker build -t srinubabuthammisetti/bank-app .'
+            }
+        }
+        stage('docker login') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'DOCKER_HUB', passwordVariable: 'DOCKER_PASSWD', usernameVariable: 'DOCKER_USER')]) {
+                sh 'docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWD}'
+                  }
+            }
+        }
+        stage('docker image pushing') {
+            steps {
+            sh 'docker push srinubabuthammisetti/bank-app'
+            }
+        }
+        stage ('create infrastructure using terraform') {
+            steps {
+                withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_credentials', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) { 
+                    
+                dir('scripts') {
+                sh 'sudo chmod 600 sri.pem'
+                sh 'terraform init'
+                sh 'terraform validate'
+                sh 'terraform apply --auto-approve'
+                    }                
+                }
+            }
+        }
+    }
+}
