@@ -16,9 +16,9 @@ provisioner "remote-exec" {
 tags = {
 Name = "test-server" 
 }
-provisioner "remote-exec" {
-   inline = ["echo $(aws_instance.test-server.public_ip) > inventory"]
-   }
+provisioner "local-exec" {
+    command = "echo ${aws_instance.test-server.public_ip} > inventory"
+}
 provisioner "local-exec" {
    command =  "ansible-playbook /home/sri/workspace/BANK-PROJECT/scripts/finance-playbook.yml"
    } 
